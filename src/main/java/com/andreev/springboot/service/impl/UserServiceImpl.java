@@ -1,6 +1,8 @@
 package com.andreev.springboot.service.impl;
 
+import com.andreev.springboot.model.Role;
 import com.andreev.springboot.model.User;
+import com.andreev.springboot.repositories.RoleRepository;
 import com.andreev.springboot.repositories.UserRepository;
 import com.andreev.springboot.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private RoleRepository roleRepository;
 
     @Transactional
     @Override
@@ -34,6 +39,11 @@ public class UserServiceImpl implements UserService {
         return userRepository.getOne(id);
     }
 
+    @Override
+    public boolean isUserExistById(long id) {
+        return userRepository.existsById(id);
+    }
+
     @Transactional(readOnly = true)
     @Override
     public List<User> getAllUsers() {
@@ -50,5 +60,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public User findByUsername(String username) {
         return userRepository.findUserByUsername(username);
+    }
+
+    @Override
+    public List<Role> getAllRoles() {
+        return roleRepository.findAll();
     }
 }

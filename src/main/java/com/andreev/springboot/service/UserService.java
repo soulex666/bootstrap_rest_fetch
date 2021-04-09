@@ -1,5 +1,6 @@
 package com.andreev.springboot.service;
 
+import com.andreev.springboot.model.Role;
 import com.andreev.springboot.model.User;
 
 import java.util.List;
@@ -11,9 +12,13 @@ public interface UserService {
 
     User getUserById(long id);
 
+    boolean isUserExistById(long id);
+
     List<User> getAllUsers();
 
     void update(User user);
 
     User findByUsername(String username);
+
+    List<Role> getAllRoles();
 }

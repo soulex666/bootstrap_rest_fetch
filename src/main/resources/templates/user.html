@@ -12,16 +12,12 @@
                 integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns"
                 crossorigin="anonymous"></script>
     </head>
-
     <body>
         <div class="row mt-5">
             <div class="col text-center">
-                <form th:action="@{'/logout'}" method="POST">
-                    <button class="btn btn-danger btn-center">Logout</button>
-                </form>
+                <a th:href="@{'/logout'}" class="btn btn-danger">Logout</a>
             </div>
         </div>
-
         <div class="container">
             <div class="row mt-5">
                 <div class="col text-center" th:if="${currentUser != null}">
@@ -36,8 +32,8 @@
                     <h1 class="text">
                         Your current roles:
                     </h1>
-                    <h1 th:each="role : ${currentUser.getRoles()}">
-                        <h1 th:text="${role.role}"></h1>
+                    <h1 th:each="role : ${currentUser.roles}">
+                        <h1 th:text="${role.role.replaceFirst('ROLE_', '')}"></h1>
                     </h1>
                 </div>
             </div>

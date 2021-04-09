@@ -8,10 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -41,54 +38,40 @@ public class UserController {
     @GetMapping("admin")
     public String index(Model model) {
         List<User> users = userService.getAllUsers();
+        User user = new User();
+
+        model.addAttribute("user", user);
+        model.addAttribute("allRoles", userService.getAllRoles());
         model.addAttribute("users", users);
 
         return "index";
     }
 
     @PostMapping("/admin/adduser")
-    public String addUser(@RequestParam(name = "first_name", defaultValue = "---") String firstName,
-                          @RequestParam(name = "last_name", defaultValue = "---") String lastName,
-                          @RequestParam(name = "age", defaultValue = "0") Byte age,
-                          @RequestParam(name = "username") String username,
-                          @RequestParam(name = "password") String password) {
+    public String addUser(@ModelAttribute User user) {
 
-        userService.saveUser(firstName, lastName, age, username, password);
+        userService.update(user);
 
         return "redirect:/admin";
     }
 
     @GetMapping("/admin/details/{id}")
     public String details(Model model, @PathVariable(name = "id") Long id) {
-        User user = userService.getUserById(id);
-        if (user == null) {
+        if (!(userService.isUserExistById(id))) {
             return "redirect:/admin";
         }
+
+        User user = userService.getUserById(id);
+
         model.addAttribute("user", user);
+        model.addAttribute("allRoles", userService.getAllRoles());
 
         return "details";
     }
 
     @PostMapping("/admin/saveuser")
-    public String saveUser(@RequestParam(name = "id") Long id,
-                           @RequestParam(name = "first_name") String firstName,
-                           @RequestParam(name = "last_name") String lastName,
-                           @RequestParam(name = "age") Byte age,
-                           @RequestParam(name = "username") String username,
-                           @RequestParam(name = "password") String password) {
-
-        User user = userService.getUserById(id);
-
-        if (user != null) {
-            user.setFirstName(firstName);
-            user.setLastName(lastName);
-            user.setAge(age);
-            user.setUsername(username);
-            user.setPassword(password);
-
-            userService.update(user);
-        }
-
+    public String saveUser(@ModelAttribute User user) {
+        userService.update(user);
         return "redirect:/admin";
     }
 

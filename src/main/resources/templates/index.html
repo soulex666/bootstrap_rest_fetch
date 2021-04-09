@@ -16,34 +16,41 @@
     <body>
         <div class="row mt-5">
             <div class="col text-center">
-                <form th:action="@{'/logout'}" method="POST">
-                    <button class="btn btn-danger btn-center">Logout</button>
-                </form>
+                <a th:href="@{'/logout'}" class="btn btn-danger">Logout</a>
+                <a th:href="@{'/user'}" class="btn btn-info">User Page</a>
             </div>
         </div>
         <div class="container">
             <div class="row mt-5">
                 <div class="col-6 offset-3">
-                    <form th:action="@{'/admin/adduser'}" method="post">
+                    <form th:action="@{'/admin/adduser'}" method="post" th:object="${user}">
                         <div class="form-group">
                             <label>First name: </label>
-                            <input type="text" class="form-control" name="first_name" placeholder="Enter your first name">
+                            <input type="text" class="form-control" name="first_name" th:field="*{firstName}">
                         </div>
                         <div class="form-group">
                             <label>Last name: </label>
-                            <input type="text" class="form-control" name="last_name" placeholder="Enter your last name">
+                            <input type="text" class="form-control" name="last_name" th:field="*{lastName}">
                         </div>
                         <div class="form-group">
                             <label>Age: </label>
-                            <input type="number" class="form-control" name="age" value="0" max="127" min="0">
+                            <input type="number" class="form-control" name="age" th:field="*{age}">
                         </div>
                         <div class="form-group">
                             <label>Username: </label>
-                            <input type="text" class="form-control" name="username" placeholder="Enter your username">
+                            <input type="text" class="form-control" name="username" th:field="*{username}">
                         </div>
                         <div class="form-group">
                             <label>Password: </label>
-                            <input type="password" class="form-control" name="password" placeholder="Enter your password">
+                            <input type="text" class="form-control" name="password" th:field="*{password}">
+                        </div>
+                        <div class="form-group">
+                            <label>Roles: </label>
+                            <th:block th:each="role : ${allRoles}">
+                                <input type="checkbox" th:field="*{roles}"
+                                       th:value="${role.id}"
+                                       th:text="${role.role.replaceFirst('ROLE_', '')}" class="m-2">
+                            </th:block>
                         </div>
                         <div class="form-group">
                             <button class="btn btn-success">Add User</button>
@@ -62,6 +69,7 @@
                             <th>Age</th>
                             <th>Username</th>
                             <th>Password</th>
+                            <th>Roles</th>
                             <th>Details</th>
                         </tr>
                         </thead>
@@ -74,6 +82,11 @@
                             <td th:text = "${user.username}"></td>
                             <td th:text = "${user.password}"></td>
                             <td>
+                                <p th:each="role : ${user.roles}">
+                                    <span th:text="${role.role.replaceFirst('ROLE_', '')}"></span>
+                                </p>
+                            </td>
+                            <td>
                                 <a th:href="@{'/admin/details/' + ${user.id}}" class="btn btn-info">Details</a>
                             </td>
                         </tr>
@@ -81,7 +94,6 @@
                     </table>
                 </div>
             </div>
-
         </div>
     </body>
 </html>
