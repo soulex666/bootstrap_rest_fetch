@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +18,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     @GetMapping(value = "user")
     public String getUserPage(Model model) {
@@ -49,6 +53,8 @@ public class UserController {
 
     @PostMapping("/admin/adduser")
     public String addUser(@ModelAttribute User user) {
+        String pass = passwordEncoder.encode(user.getPassword());
+        user.setPassword(pass);
 
         userService.update(user);
 
@@ -71,13 +77,15 @@ public class UserController {
 
     @PostMapping("/admin/saveuser")
     public String saveUser(@ModelAttribute User user) {
+        String pass = passwordEncoder.encode(user.getPassword());
+        user.setPassword(pass);
+
         userService.update(user);
         return "redirect:/admin";
     }
 
     @PostMapping("/admin/deleteuser")
     public String deleteUser(@RequestParam(name = "id") Long id) {
-
         userService.removeUserById(id);
 
         return "redirect:/admin";
