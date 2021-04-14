@@ -12,6 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Controller
@@ -91,7 +92,7 @@ public class UserController {
         return "details";
     }
 
-    @PostMapping("/admin/saveuser")
+    @PostMapping("/admin/update")
     public String saveUser(@ModelAttribute User user) {
         String pass = passwordEncoder.encode(user.getPassword());
         user.setPassword(pass);

@@ -41,35 +41,40 @@
                     <div class="col-sm-9">
                         <div class="card">
                             <h5 class="card-header">About user</h5>
-                            <div class="card-body">
-                                <div class="container" th:fragment="user_information">
-                                    <table class="table table-striped">
-                                        <thead>
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>First Name</th>
-                                            <th>Last Name</th>
-                                            <th>Age</th>
-                                            <th>Email</th>
-                                            <th>Roles</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        <tr th:object="${currentUser}">
-                                            <td th:text = "*{id}"></td>
-                                            <td th:text = "*{firstName}"></td>
-                                            <td th:text = "*{lastName}"></td>
-                                            <td th:text = "*{age}"></td>
-                                            <td th:text = "*{username}"></td>
-                                            <td>
-                                                <a th:each="role : *{roles}">
-                                                    <a th:text="${role.role.replaceFirst('ROLE_', '')}"></a>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
-
+                            <div class="col-12">
+                                <div class="card-body">
+                                    <div class="container" th:fragment="user_information">
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <table class="table table-striped">
+                                            <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>First Name</th>
+                                                <th>Last Name</th>
+                                                <th>Age</th>
+                                                <th>Email</th>
+                                                <th>Roles</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <tr th:object="${currentUser}">
+                                                <td th:text = "*{id}"></td>
+                                                <td th:text = "*{firstName}"></td>
+                                                <td th:text = "*{lastName}"></td>
+                                                <td th:text = "*{age}"></td>
+                                                <td th:text = "*{username}"></td>
+                                                <td>
+                                                    <a th:each="role : *{roles}">
+                                                        <a th:text="${role.role.replaceFirst('ROLE_', '')}"></a>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
