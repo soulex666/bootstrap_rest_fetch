@@ -12,6 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 public class UserController {
@@ -25,24 +26,39 @@ public class UserController {
     @GetMapping(value = "user")
     public String getUserPage(Model model) {
         model.addAttribute("currentUser", getUserData());
+        model.addAttribute("currentUserRoles",
+                getUserData().getRoles()
+                        .stream()
+                        .map(x -> x.getRole().replaceFirst("ROLE_", ""))
+                        .collect(Collectors.toList()));
+
+        model.addAttribute("currentUser", getUserData());
         return "user";
     }
 
     @GetMapping(value = "/login")
     public String login(Model model) {
         model.addAttribute("currentUser", getUserData());
-        return "login";
+        return "redirect:/";
     }
 
     @GetMapping(value = "/")
     public String getLoginPage() {
-        return "redirect:login";
+        return "login";
     }
 
     @GetMapping("admin")
     public String index(Model model) {
         List<User> users = userService.getAllUsers();
         User user = new User();
+
+        model.addAttribute("currentUser", getUserData());
+        model.addAttribute("currentUserRoles",
+                getUserData().getRoles()
+                        .stream()
+                        .map(x -> x.getRole().replaceFirst("ROLE_", ""))
+                        .collect(Collectors.toList()));
+
 
         model.addAttribute("user", user);
         model.addAttribute("allRoles", userService.getAllRoles());

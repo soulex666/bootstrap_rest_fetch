@@ -13,24 +13,20 @@
                 crossorigin="anonymous"></script>
     </head>
 
-    <body>
-        <div class="container">
-            <div class="row mt-5">
-                <div class="col-6 offset-3">
-                    <form th:action="@{'/login'}" method="post">
+    <body class="text-dark bg-light">
+        <div class="container-fluid flex">
+            <div class="row justify-content-center">
+                <div class="col-md-2 p-0 pt-3">
+                    <form th:action="@{'/'}" method="post">
+                        <h2>Please sign in</h2>
                         <div class="form-group">
-                            <label>Username: </label>
-                            <input type="text" name="username" class="form-control" required>
+                            <input type="text" name="username" class="form-control" required placeholder="Username">
+                            <input type="password" name="password" class="form-control" required placeholder="Password">
                         </div>
                         <div class="form-group">
-                            <label>Password: </label>
-                            <input type="password" name="password" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <button class="btn btn-success float-right">Sign In</button>
+                            <button class="btn btn-primary btn-block">Sign In</button>
                         </div>
                     </form>
-
                 </div>
             </div>
         </div>
