@@ -12,7 +12,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Controller
@@ -37,13 +36,7 @@ public class UserController {
         return "user";
     }
 
-    @GetMapping(value = "/login")
-    public String login(Model model) {
-        model.addAttribute("currentUser", getUserData());
-        return "redirect:/";
-    }
-
-    @GetMapping(value = "/")
+    @GetMapping(value = {"/", "/login"})
     public String getLoginPage() {
         return "login";
     }
@@ -61,43 +54,20 @@ public class UserController {
                         .collect(Collectors.toList()));
 
 
-        model.addAttribute("user", user);
+        model.addAttribute("newUser", user);
         model.addAttribute("allRoles", userService.getAllRoles());
         model.addAttribute("users", users);
 
         return "index";
     }
 
-    @PostMapping("/admin/adduser")
-    public String addUser(@ModelAttribute User user) {
-        String pass = passwordEncoder.encode(user.getPassword());
-        user.setPassword(pass);
-
-        userService.update(user);
-
-        return "redirect:/admin";
-    }
-
-    @GetMapping("/admin/details/{id}")
-    public String details(Model model, @PathVariable(name = "id") Long id) {
-        if (!(userService.isUserExistById(id))) {
-            return "redirect:/admin";
-        }
-
-        User user = userService.getUserById(id);
-
-        model.addAttribute("user", user);
-        model.addAttribute("allRoles", userService.getAllRoles());
-
-        return "details";
-    }
-
-    @PostMapping("/admin/update")
+    @PostMapping(value = {"/admin/adduser", "/admin/saveuser"})
     public String saveUser(@ModelAttribute User user) {
         String pass = passwordEncoder.encode(user.getPassword());
         user.setPassword(pass);
 
         userService.update(user);
+
         return "redirect:/admin";
     }
 

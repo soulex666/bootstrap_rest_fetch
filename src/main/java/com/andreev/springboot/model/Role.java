@@ -1,9 +1,6 @@
 package com.andreev.springboot.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 
 import javax.persistence.Column;
@@ -19,6 +16,7 @@ import javax.persistence.Table;
 @AllArgsConstructor
 @Getter
 @Setter
+@ToString
 public class Role implements GrantedAuthority {
 
     @Id

@@ -17,7 +17,7 @@ import java.util.Set;
 @Getter
 @Setter
 @ToString
-public class    User implements UserDetails {
+public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
