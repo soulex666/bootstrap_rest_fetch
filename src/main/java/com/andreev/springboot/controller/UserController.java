@@ -63,12 +63,19 @@ public class UserController {
 
     @PostMapping(value = {"/admin/adduser", "/admin/saveuser"})
     public String saveUser(@ModelAttribute User user) {
+
         String pass = passwordEncoder.encode(user.getPassword());
         user.setPassword(pass);
 
         userService.update(user);
 
         return "redirect:/admin";
+    }
+
+    @GetMapping("/admin/getuser")
+    @ResponseBody
+    public User getUserById(Long id) {
+        return userService.getUserById(id);
     }
 
     @PostMapping("/admin/deleteuser")
