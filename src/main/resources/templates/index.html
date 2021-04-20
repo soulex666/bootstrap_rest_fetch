@@ -20,7 +20,7 @@
         </div>
         <form class="nav-item">
             <ul class="navbar-nav">
-                <a class="nav-link" th:href="@{'/logout'}">Logout</a>
+                <a class="nav-link logout" th:href="@{'/logout'}">Logout</a>
             </ul>
         </form>
     </nav>
@@ -93,25 +93,7 @@
                                                                 <th>Delete</th>
                                                             </tr>
                                                             </thead>
-                                                            <tbody>
-                                                            <tr th:each="oneOfUsers : ${users}">
-                                                                <td th:text="${oneOfUsers.id}"></td>
-                                                                <td th:text="${oneOfUsers.firstName}"></td>
-                                                                <td th:text="${oneOfUsers.lastName}"></td>
-                                                                <td th:text="${oneOfUsers.age}"></td>
-                                                                <td th:text="${oneOfUsers.username}"></td>
-                                                                <td>
-                                                                    <a th:each="role : ${oneOfUsers.roles}">
-                                                                        <a th:text="${role.role.replaceFirst('ROLE_', '')}"></a>
-                                                                    </a>
-                                                                </td>
-                                                                <td>
-                                                                    <a th:href="@{admin/getuser/(id=${oneOfUsers.id})}" class="btn btn-info eBtn">Edit</a>
-                                                                </td>
-                                                                <td>
-                                                                    <a th:href="@{admin/getuser/(id=${oneOfUsers.id})}" class="btn btn-danger dBtn">Delete</a>
-                                                                </td>
-                                                            </tr>
+                                                            <tbody id="userTable">
                                                             </tbody>
                                                         </table>
                                                         <!-- All users information end-->
@@ -120,7 +102,7 @@
                                                         <div class="editForm">
                                                             <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="ModalLabel" aria-hidden="true">
                                                                 <div class="modal-dialog" role="document">
-                                                                    <form th:action="@{'/admin/saveuser'}" id="editForm" method="post">
+                                                                    <form th:action="@{/admin/edit/{id}}" th:method="PUT">
                                                                         <div class="modal-content">
                                                                             <div class="modal-header">
                                                                                 <h5 class="modal-title" id="editModalLabel">Edit</h5>
@@ -163,7 +145,7 @@
                                                                                     <div class="form-group">
                                                                                         <label for="passwordEdit">Password: </label>
                                                                                         <input type="password" class="form-control"
-                                                                                               name="password" id="passwordEdit"/>
+                                                                                               name="password" id="passwordEdit" value=""/>
                                                                                     </div>
 
                                                                                     <div class="form-group">
@@ -171,6 +153,7 @@
                                                                                         <select class="custom-select" size="2" name="roles" id="rolesEdit" multiple>
                                                                                             <option th:each="i : ${allRoles}"
                                                                                                     th:value="${i.id}"
+                                                                                                    th:name="${i.role}"
                                                                                                     th:text="${i.role.replaceFirst('ROLE_', '')}"
                                                                                             ></option>
                                                                                         </select>
@@ -179,7 +162,7 @@
                                                                             </div>
                                                                             <div class="modal-footer">
                                                                                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                                                                <input type="submit" class="btn btn-primary" value="Edit"/>
+                                                                                <button type="submit" class="btn btn-primary editButton" value="Edit">Edit</button>
                                                                             </div>
                                                                         </div>
                                                                     </form>
@@ -195,7 +178,7 @@
                                                                     <form th:action="@{'/admin/deleteuser'}" id="deleteForm" method="post">
                                                                         <div class="modal-content">
                                                                             <div class="modal-header">
-                                                                                <h5 class="modal-title" id="deleteModalLabel">Edit</h5>
+                                                                                <h5 class="modal-title" id="deleteModalLabel">Delete</h5>
                                                                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                                                     <span aria-hidden="true">&times;</span>
                                                                                 </button>
@@ -246,7 +229,7 @@
                                                                             </div>
                                                                             <div class="modal-footer">
                                                                                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                                                                <input type="submit" class="btn btn-danger" value="Delete"/>
+                                                                                <button type="submit" class="btn btn-danger deleteButton" value="Delete">Delete</button>
                                                                             </div>
                                                                         </div>
                                                                     </form>

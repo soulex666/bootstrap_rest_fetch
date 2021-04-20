@@ -72,12 +72,6 @@ public class UserController {
         return "redirect:/admin";
     }
 
-    @GetMapping("/admin/getuser")
-    @ResponseBody
-    public User getUserById(Long id) {
-        return userService.getUserById(id);
-    }
-
     @PostMapping("/admin/deleteuser")
     public String deleteUser(@RequestParam(name = "id") Long id) {
         userService.removeUserById(id);
