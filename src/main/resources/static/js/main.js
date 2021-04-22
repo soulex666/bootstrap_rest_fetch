@@ -2,22 +2,33 @@ $(document).ready(function () {
     restartAllUser();
 });
 
-
 function restartAllUser() {
-    let UserTableBody = $("#userTable")
+    let userTableBody = $("#userTable")
+    let currentUserBody = $("#currentUserTable")
 
-    UserTableBody.children().remove();
+    userTableBody.children().remove();
+    currentUserBody.children().remove();
 
     fetch("admin/getusers")
-        .then((response) => {
-            response.json().then(data => data.forEach(function (item) {
-                let TableRow = createTable(item);
-                UserTableBody.append(TableRow);
+        .then(response => response.json())
+        .then(data => data.forEach(function (user) {
+            let tableRow = createTable(user);
+            userTableBody.append(tableRow);
 
-            }));
+        })).catch(error => {
+        console.log(error);
+    });
+
+    fetch("principal")
+        .then(response => response.json())
+        .then(function (user) {
+            let tableRow = currentUserTable(user);
+            currentUserBody.append(tableRow);
+
         }).catch(error => {
         console.log(error);
     });
+
 }
 
 function createTable(user) {
@@ -41,6 +52,22 @@ function createTable(user) {
         </tr>`;
 }
 
+function currentUserTable(user) {
+    let userRole = "";
+    for (let i = 0; i < user.roles.length; i++) {
+        userRole += " " + user.roles[i].role.replaceAll('ROLE_', '');
+    }
+
+    return `<tr id="currentUserTable">
+               <td>${user.id}</td>
+                <td>${user.firstName}</td>
+                <td>${user.lastName}</td>
+                <td>${user.age}</td>
+                <td>${user.username}</td>
+                <td>${userRole}</td>
+            </tr>`;
+}
+
 document.addEventListener('click', function (event) {
     event.preventDefault()
 
@@ -48,11 +75,11 @@ document.addEventListener('click', function (event) {
         let href = $(event.target).attr("href");
         $(".editForm #editModal").modal();
 
-        $('.editForm #rolesEdit option[value="1"]').attr('selected', false);
-        $('.editForm #rolesEdit option[value="2"]').attr('selected', false);
+        document.getElementById("role1Ed").selected = false;
+        document.getElementById("role2Ed").selected = false;
 
         fetch(href)
-            .then(responce => responce.json())
+            .then(response => response.json())
             .then(function (user, status) {
                 $('.editForm #idEdit').val(user.id)
                 $('.editForm #firstNameEdit').val(user.firstName)
@@ -63,10 +90,10 @@ document.addEventListener('click', function (event) {
 
                 user.roles.forEach((role) => {
                     if (role.role === 'ROLE_USER') {
-                        $('.editForm #rolesEdit option[value="1"]').attr('selected', true);
+                        document.getElementById("role1Ed").selected = true;
                     }
                     if (role.role === 'ROLE_ADMIN') {
-                        $('.editForm #rolesEdit option[value="2"]').attr('selected', true);
+                        document.getElementById("role2Ed").selected = true;
                     }
                 });
             })
@@ -74,17 +101,62 @@ document.addEventListener('click', function (event) {
 
     if ($(event.target).hasClass('editButton')) {
         let user = {
-            id:$('#idEdit').val(),
-            firstName:$('#firstNameEdit').val(),
-            lastName:$('#lastNameEdit').val(),
-            age:$('#ageEdit').val(),
-            username:$('#usernameEdit').val(),
-            password:$('#passwordEdit').val(),
+            id: $('#idEdit').val(),
+            firstName: $('#firstNameEdit').val(),
+            lastName: $('#lastNameEdit').val(),
+            age: $('#ageEdit').val(),
+            username: $('#usernameEdit').val(),
+            password: $('#passwordEdit').val(),
             roles: getRole("#rolesEdit")
         }
 
         editModalButton(user)
-        console.log(user);
+    }
+
+    if ($(event.target).hasClass('addNewUser')) {
+        let newUser = {
+            id: $('#idNew').val(),
+            firstName: $('#firstNameNew').val(),
+            lastName: $('#lastNameNew').val(),
+            age: $('#ageNew').val(),
+            username: $('#usernameNew').val(),
+            password: $('#passwordNew').val(),
+            roles: getRole("#rolesNew")
+        }
+
+        newUserButton(newUser)
+    }
+
+    if ($(event.target).hasClass('dBtn')) {
+        let href = $(event.target).attr("href");
+        $(".deleteForm #deleteModal").modal();
+
+        document.getElementById("role1Del").selected = false;
+        document.getElementById("role2Del").selected = false;
+
+        fetch(href)
+            .then(response => response.json())
+            .then(function (user, status) {
+                $('.deleteForm #idDelete').val(user.id)
+                $('.deleteForm #firstNameDelete').val(user.firstName)
+                $('.deleteForm #lastNameDelete').val(user.lastName)
+                $('.deleteForm #ageDelete').val(user.age)
+                $('.deleteForm #usernameDelete').val(user.username)
+
+                user.roles.forEach((role) => {
+                    if (role.role === 'ROLE_USER') {
+                        document.getElementById("role1Del").selected = true;
+                    }
+                    if (role.role === 'ROLE_ADMIN') {
+                        document.getElementById("role2Del").selected = true;
+                    }
+                });
+            })
+    }
+
+    if ($(event.target).hasClass('deleteButton')) {
+        let id = $('#idDelete').val();
+        deleteModalButton(id)
     }
 
     if ($(event.target).hasClass('logout')) {
@@ -92,7 +164,7 @@ document.addEventListener('click', function (event) {
     }
 });
 
-function logout(){
+function logout() {
     document.location.replace("/logout");
 }
 
@@ -114,39 +186,38 @@ function editModalButton(user) {
     }).then(function (response) {
         $('input').val('');
         $('.editForm #editModal').modal('hide');
+
         restartAllUser();
+    }).catch(error => {
+        console.log(error);
     })
 }
 
+function newUserButton(user) {
+    fetch("/admin/newuser", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json;charset=utf-8"
+        },
+        body: JSON.stringify(user)
+    }).then(function () {
+        $('input').val('');
+        $('.newUserForm select').val('');
+        $('.nav-tabs a[href="#nav-users"]').tab('show');
 
+        restartAllUser();
+    }).catch(error => {
+        console.log(error);
+    })
+}
 
-
-function deleteUser() {
-    $('.dBtn').on('click', function (event) {
-
-        event.preventDefault();
-        var href = $(this).attr('href');
-        $('.deleteForm #rolesDelete option[value="1"]').attr('selected', false);
-        $('.deleteForm #rolesDelete option[value="2"]').attr('selected', false);
-
-        fetch(href)
-            .then(responce => responce.json())
-            .then(function (user, status) {
-                $('.deleteForm #idDelete').val(user.id)
-                $('.deleteForm #firstNameDelete').val(user.firstName)
-                $('.deleteForm #lastNameDelete').val(user.lastName)
-                $('.deleteForm #ageDelete').val(user.age)
-                $('.deleteForm #usernameDelete').val(user.username)
-
-                user.roles.forEach((role) => {
-                    if (role.role === 'ROLE_USER') {
-                        $('.deleteForm #rolesDelete option[value="1"]').attr('selected', true);
-                    }
-                    if (role.role === 'ROLE_ADMIN') {
-                        $('.deleteForm #rolesDelete option[value="2"]').attr('selected', true);
-                    }
-                });
-            })
-            .then($('.deleteForm #deleteModal').modal())
-    });
+function deleteModalButton(id) {
+    fetch("/admin/delete/" + id, {
+        method: "DELETE"
+    }).then(function () {
+        $('.deleteForm #deleteModal').modal('hide');
+        restartAllUser();
+    }).catch(error => {
+        console.log(error);
+    })
 }
