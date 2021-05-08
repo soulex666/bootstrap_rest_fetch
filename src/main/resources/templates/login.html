@@ -27,6 +27,16 @@
                             <button class="btn btn-primary btn-block">Sign In</button>
                         </div>
                     </form>
+                    <div class="modal-footer text-center d-block">
+                        <div class="form-group">
+                            <label class="text-muted">или войдите с помощью:</label>
+                        </div>
+                        <nav class="nav nav-pills nav-justified">
+                            <a class="nav-link" th:href="@{/oauth2/authorization/google}"><img src="google-icon.svg" alt="Google"></a>
+                            <a class="nav-link" th:href="@{/oauth2/authorization/facebook}"><img src="facebook-icon.svg" alt="Facebook"></a>
+                            <a class="nav-link" href="#"><img src="vk-icon.svg" alt="VK"></a>
+                        </nav>
+                    </div>
                 </div>
             </div>
         </div>

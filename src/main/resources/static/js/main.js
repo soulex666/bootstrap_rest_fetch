@@ -33,8 +33,8 @@ function restartAllUser() {
 
 function createTable(user) {
     let userRole = "";
-    for (let i = 0; i < user.roles.length; i++) {
-        userRole += " " + user.roles[i].role.replaceAll('ROLE_', '');
+    for (let value of user.roles) {
+        userRole += " " + value.role.replaceAll('ROLE_', '');
     }
     return `<tr id="userTable">
             <td>${user.id}</td>
@@ -54,8 +54,8 @@ function createTable(user) {
 
 function currentUserTable(user) {
     let userRole = "";
-    for (let i = 0; i < user.roles.length; i++) {
-        userRole += " " + user.roles[i].role.replaceAll('ROLE_', '');
+    for (let value of user.roles) {
+        userRole += " " + value.role.replaceAll('ROLE_', '');
     }
 
     return `<tr id="currentUserTable">
@@ -97,6 +97,10 @@ document.addEventListener('click', function (event) {
                     }
                 });
             })
+    }
+
+    if ($(event.target).hasClass('login-Btn')) {
+        $(".loginForm #loginModal").modal();
     }
 
     if ($(event.target).hasClass('editButton')) {

@@ -19,7 +19,7 @@ public class UserRestController {
     private UserService userService;
 
     @Autowired
-    PasswordEncoder passwordEncoder;
+    private PasswordEncoder passwordEncoder;
 
     @GetMapping("/admin/getuser/{id}")
     public User getUserById(@PathVariable Long id) {

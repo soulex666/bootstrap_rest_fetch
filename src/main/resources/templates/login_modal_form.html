@@ -1,0 +1,62 @@
+<div class="loginForm">
+  <div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="ModalLabel" aria-hidden="true">
+    <div class="modal-dialog"  role="document">
+      <form th:action="@{'/'}" method="post">
+        <div class="modal-content">
+          <div class="modal-header text-center d-block">
+
+            <h2 class="modal-title" id="loginModalLabel">
+              <a class="nav-link"><img src="logo.svg" alt="logo"></a>
+            </h2>
+          </div>
+          <div class="modal-body">
+            <div class="container">
+              <div class="form-group text-center">
+                <label class="font-weight-bold" for="usernameLogin"></label>
+                <input type="text" class="form-control"
+                       name="username" id="usernameLogin"
+                       placeholder="Имя пользователя"
+                       value="" required/>
+              </div>
+              <div class="form-group text-center">
+                <label class="text-center font-weight-bold" for="passwordLogin"></label>
+                <input type="password" class="form-control"
+                       name="password" id="passwordLogin"
+                       placeholder="Пароль"
+                       value="" required/>
+              </div>
+              <div class="form-group form-check">
+                <input type="checkbox" class="form-check-input" id="exampleCheck1">
+                <label class="form-check-label" for="exampleCheck1">Запомнить пароль</label>
+              </div>
+            </div>
+            <div class="container text-right">
+              <button type="submit" class="btn btn-outline-primary loginButton">Войти</button>
+            </div>
+          </div>
+
+          <div class="modal-footer text-center d-block">
+            <div class="form-group">
+              <label class="text-muted">или войдите с помощью:</label>
+            </div>
+            <nav class="nav nav-pills nav-justified">
+              <a class="nav-link" href="#"><img src="vk-icon.svg" alt="VK"></a>
+              <a class="nav-link" href="#"><img src="google-icon.svg" alt="Google"></a>
+              <a class="nav-link" href="#"><img src="ok-icon.svg" alt="OK"></a>
+              <a class="nav-link" href="#"><img src="facebook-icon.svg" alt="Facebook"></a>
+            </nav>
+          </div>
+
+          <div class="modal-footer text-center d-block">
+            <div class="form-group">
+              <label class="text-muted">а если вы у нас впервые:</label>
+            </div>
+            <nav class="nav nav-pills nav-justified">
+              <a class="nav-link" href="#">зарегистрироваться</a>
+            </nav>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
