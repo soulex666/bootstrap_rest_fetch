@@ -59,7 +59,7 @@ public class UserController {
             System.out.println(map.getKey() + " : " + map.getValue());
         }
 
-        return "login";
+        return "redirect:/admin/newuser";
     }
 
 }

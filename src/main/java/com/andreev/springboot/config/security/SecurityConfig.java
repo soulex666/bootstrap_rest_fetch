@@ -1,5 +1,6 @@
 package com.andreev.springboot.config.security;
 
+import com.andreev.springboot.config.security.oauth2.CustomOidcUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -20,6 +21,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final UserDetailsService userDetailsService;
     private final SuccessUserHandler successUserHandler;
 
+    @Autowired
+    private CustomOidcUserService customOidcUserService;
+
     public SecurityConfig(@Qualifier("userDetailsServiceImpl") UserDetailsService userDetailsService,
                           SuccessUserHandler successUserHandler) {
         this.userDetailsService = userDetailsService;
@@ -33,7 +37,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Override
-    public void configure(WebSecurity web){
+    public void configure(WebSecurity web) {
         web
                 .ignoring()
                 .antMatchers("/resources/**");
@@ -63,10 +67,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/principal").authenticated()
                 .antMatchers("/admin/**").access("hasAnyRole('ADMIN')")
                 .antMatchers("/user/**").access("hasAnyRole('USER','ADMIN')")
-                .and().oauth2Login()
+                .and()
+                .oauth2Login()
                 .loginPage("/oauth2/authorization/google")
-                .defaultSuccessUrl("/loginSuccess")
-                .failureUrl("/loginFailure");
+//                .defaultSuccessUrl("/loginSuccess")
+                .userInfoEndpoint()
+                .oidcUserService(customOidcUserService)
+                .and()
+                .successHandler(successUserHandler)
+        ;
     }
 
     @Bean
