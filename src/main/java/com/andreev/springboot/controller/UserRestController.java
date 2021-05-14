@@ -4,8 +4,7 @@ import com.andreev.springboot.model.Role;
 import com.andreev.springboot.model.User;
 import com.andreev.springboot.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -28,15 +27,9 @@ public class UserRestController {
 
     @GetMapping("/principal")
     public User currentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return userService.findByUsername(
+                SecurityContextHolder.getContext().getAuthentication().getName());
 
-        if (!(authentication instanceof AnonymousAuthenticationToken)) {
-            User secUser = (User) authentication.getPrincipal();
-
-            return userService.findByUsername(secUser.getUsername());
-        }
-
-        return null;
     }
 
     @GetMapping("/admin/getusers")
@@ -51,7 +44,7 @@ public class UserRestController {
 
     @PutMapping("/admin/edit")
     public void update(@RequestBody User user) {
-        User oldUser = userService.getUserById(user.getId());
+        var oldUser = userService.getUserById(user.getId());
 
         if (!(oldUser.getPassword().equals(user.getPassword()))) {
             String pass = passwordEncoder.encode(user.getPassword());

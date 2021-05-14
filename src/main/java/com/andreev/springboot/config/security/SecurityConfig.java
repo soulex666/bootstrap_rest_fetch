@@ -1,6 +1,7 @@
 package com.andreev.springboot.config.security;
 
-import com.andreev.springboot.config.security.oauth2.CustomOidcUserService;
+import com.andreev.springboot.config.security.oauth2.services.FacebookOAuth2UserService;
+import com.andreev.springboot.config.security.oauth2.services.GoogleOidcUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -10,7 +11,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.oauth2.client.CommonOAuth2Provider;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -20,14 +20,16 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final UserDetailsService userDetailsService;
     private final SuccessUserHandler successUserHandler;
-
-    @Autowired
-    private CustomOidcUserService customOidcUserService;
+    private final GoogleOidcUserService googleOidcUserService;
+    private final FacebookOAuth2UserService facebookOAuth2UserService;
 
     public SecurityConfig(@Qualifier("userDetailsServiceImpl") UserDetailsService userDetailsService,
-                          SuccessUserHandler successUserHandler) {
+                          SuccessUserHandler successUserHandler, FacebookOAuth2UserService facebookOAuth2UserService,
+                          GoogleOidcUserService googleOidcUserService) {
         this.userDetailsService = userDetailsService;
         this.successUserHandler = successUserHandler;
+        this.facebookOAuth2UserService = facebookOAuth2UserService;
+        this.googleOidcUserService = googleOidcUserService;
     }
 
     @Autowired
@@ -58,6 +60,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .passwordParameter("password")
                 .permitAll();
 
+        http.oauth2Login()
+                .loginPage("/")
+//                .defaultSuccessUrl("/loginSuccess")
+                .userInfoEndpoint()
+                .oidcUserService(googleOidcUserService)
+                .userService(facebookOAuth2UserService)
+                .and()
+                .successHandler(successUserHandler);
+
         http.logout()
                 .permitAll()
                 .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
@@ -66,16 +77,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.authorizeRequests()
                 .antMatchers("/principal").authenticated()
                 .antMatchers("/admin/**").access("hasAnyRole('ADMIN')")
-                .antMatchers("/user/**").access("hasAnyRole('USER','ADMIN')")
-                .and()
-                .oauth2Login()
-                .loginPage("/oauth2/authorization/google")
-//                .defaultSuccessUrl("/loginSuccess")
-                .userInfoEndpoint()
-                .oidcUserService(customOidcUserService)
-                .and()
-                .successHandler(successUserHandler)
-        ;
+                .antMatchers("/user/**").access("hasAnyRole('USER','ADMIN')");
     }
 
     @Bean
