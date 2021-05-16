@@ -1,83 +1,132 @@
 package com.andreev.springboot.config.security.oauth2;
 
+import com.andreev.springboot.model.User;
+import com.andreev.springboot.repositories.RoleRepository;
+import com.andreev.springboot.service.UserService;
 import com.github.scribejava.apis.VkontakteApi;
-import com.github.scribejava.apis.vk.VKOAuth2AccessToken;
 import com.github.scribejava.core.builder.ServiceBuilder;
-import com.github.scribejava.core.model.OAuth2AccessToken;
-import com.github.scribejava.core.model.OAuthRequest;
-import com.github.scribejava.core.model.Response;
-import com.github.scribejava.core.model.Verb;
+import com.github.scribejava.core.model.*;
 import com.github.scribejava.core.oauth.AccessTokenRequestParams;
 import com.github.scribejava.core.oauth.OAuth20Service;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.util.Scanner;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 @Service
 public class VKOAuth {
+    private final Logger logger = LoggerFactory.getLogger(VKOAuth.class);
 
-    private static final String NETWORK_NAME = "Vkontakte.ru";
+    private OAuth20Service vkService;
+    private final UserService userService;
+    private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
+
+    @Value("${vk.client-id}")
+    private String clientId;
+
+    @Value("${vk.client-secret}")
+    private String clientSecret;
+
+    @Value("${vk.scope}")
+    private String scope;
+
+    @Value("${vk.callback}")
+    private String callback;
+
+    @Value("${vk.default_password}")
+    private String password;
+
     private static final String PROTECTED_RESOURCE_URL = "https://api.vk.com/method/users.get?v="
             + VkontakteApi.VERSION;
 
-    private VKOAuth() {
+    public VKOAuth(UserService userService, PasswordEncoder passwordEncoder, RoleRepository roleRepository) {
+        this.userService = userService;
+        this.passwordEncoder = passwordEncoder;
+        this.roleRepository = roleRepository;
     }
 
-    @SuppressWarnings("PMD.SystemPrintln")
-    public static void main(String... args) throws IOException, InterruptedException, ExecutionException {
-        // Replace these with your client id and secret
-        final String clientId = "7852396";
-        final String clientSecret = "g8CAgh6jh6rNCmjKymn0";
-
-        final OAuth20Service service = new ServiceBuilder(clientId)
+    @PostConstruct
+    private void init () {
+        vkService = new ServiceBuilder(clientId)
                 .apiSecret(clientSecret)
-                .defaultScope("wall,offline") // replace with desired scope
-                .callback("http://localhost:8080/user")
+                .defaultScope(scope)
+                .callback(callback)
                 .build(VkontakteApi.instance());
-        final Scanner in = new Scanner(System.in);
+    }
 
-        System.out.println("=== " + NETWORK_NAME + "'s OAuth Workflow ===");
-        System.out.println();
-
-        // Obtain the Authorization URL
-        System.out.println("Fetching the Authorization URL...");
-        final String customScope = "wall,offline,email";
-        final String authorizationUrl = service.createAuthorizationUrlBuilder()
-                .scope(customScope)
+    public String getAuthorizationUrl() {
+        return vkService.createAuthorizationUrlBuilder()
                 .build();
-        System.out.println("Got the Authorization URL!");
-        System.out.println("Now go and authorize ScribeJava here:");
-        System.out.println(authorizationUrl);
-        System.out.println("And paste the authorization code here");
-        System.out.print(">>");
-        final String code = in.nextLine();
-        System.out.println();
+    }
 
-        System.out.println("Trading the Authorization Code for an Access Token...");
-        final OAuth2AccessToken accessToken = service.getAccessToken(AccessTokenRequestParams.create(code)
-                .scope(customScope));
-        System.out.println("Got the Access Token!");
-        System.out.println("(The raw response looks like this: " + accessToken.getRawResponse() + "')");
-        if (accessToken instanceof VKOAuth2AccessToken) {
-            System.out.println("it's a VKOAuth2AccessToken, it has email field = '"
-                    + ((VKOAuth2AccessToken) accessToken).getEmail() + "'.");
+    public boolean isUserAuthenticated(String code) {
+        try {
+            logger.info("Попытка получить Access Token для VK по коду {}", code);
+            final OAuth2AccessToken accessToken = vkService.getAccessToken(AccessTokenRequestParams.create(code));
+
+            JSONObject rowResponse = new JSONObject(accessToken.getRawResponse());
+            String email = rowResponse.getString("email");
+
+            if (email != null) {
+                logger.info("Получен адрес электронной почты '{}' с токена {} ", email, code);
+            }
+
+            final OAuthRequest request = new OAuthRequest(Verb.GET, PROTECTED_RESOURCE_URL);
+            vkService.signRequest(accessToken, request);
+
+            Response response1 = vkService.execute(request);
+
+            JSONObject obj = new JSONObject(response1.getBody());
+            JSONArray arr = obj.getJSONArray("response");
+
+            logger.info("Попытка получения пользователя с электронной почтой '{}'", email);
+
+            User userOptional = userService.findByUsername(email);
+
+            if (userOptional == null) {
+                logger.info("Пользователь с электронной почтой '{}' не найдем, сохраняем нового пользователя", email);
+                userOptional = new User();
+                userOptional.setUsername(email);
+                userOptional.setFirstName(arr.getJSONObject(0).getString("first_name"));
+                userOptional.setLastName(arr.getJSONObject(0).getString("last_name"));
+                userOptional.setAge((byte) 0);
+                userOptional.setPassword(passwordEncoder.encode(password));
+                userOptional.setRoles(Set.of(roleRepository.getOne(1L)));
+
+                userService.update(userOptional);
+
+                logger.info("Пользователь с электронной почтой '{}' сохранён в базу данных", email);
+            } else {
+                logger.info("Пользователь с электронной почтой '{}' найден в базе данных", email);
+            }
+
+            logger.info("Создание аутентификации пользователя с электронной почтой '{}'", email);
+
+            Authentication authentication =
+                    new UsernamePasswordAuthenticationToken(userOptional.getUsername(), password);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            logger.info("Аутентификации пользователя с электронной почтой '{}' установлена", email);
+
+            return true;
+
+        } catch (IOException | InterruptedException | ExecutionException | JSONException | OAuth2AccessTokenErrorResponse e) {
+            logger.error("Проблема с доступом в VK по коду " + code, e);
         }
-        System.out.println();
 
-        // Now let's go and ask for a protected resource!
-        System.out.println("Now we're going to access a protected resource...");
-        final OAuthRequest request = new OAuthRequest(Verb.GET, PROTECTED_RESOURCE_URL);
-        service.signRequest(accessToken, request);
-        try (Response response = service.execute(request)) {
-            System.out.println("Got it! Lets see what we found...");
-            System.out.println();
-            System.out.println(response.getCode());
-            System.out.println(response.getBody());
-        }
-
-        System.out.println();
-        System.out.println("Thats it man! Go and build something awesome with ScribeJava! :)");
+        return false;
     }
 }
